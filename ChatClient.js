@@ -1,3 +1,4 @@
+console.log("Included ChatClient.js")
 class ChatClient {
 
   socket = {}
