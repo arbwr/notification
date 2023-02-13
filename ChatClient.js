@@ -1,4 +1,3 @@
-console.log("Included ChatClient.js")
 class ChatClient {
 
   socket = {}
@@ -20,9 +19,7 @@ class ChatClient {
       this.config = config;
     }
 
-    const socket = io(this.notificationHub, {
-      transports: ['websocket'],
-    });
+    const socket = io(this.notificationHub);
     this.socket = socket;
 
     socket.on('connect', () => {
@@ -48,8 +45,11 @@ class ChatClient {
             reject(error)
           } else {
             console.log(history);
-            this.notifications = history.messages
-            resolve(history.messages)
+            if (history?.messages) {
+              this.notifications = history?.messages
+            }
+
+            resolve(this.notifications)
           }
         });
       })
@@ -73,21 +73,24 @@ class ChatClient {
                 </div>
                 
                 <ul class="custom-notifications">
-                    ${notifications.reverse().map((notification) => {
-          return (
-            `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread'} pointer">
-                <div class="text">
-                    <strong>${notification.user}:</strong> 
-                    ${notification.text}
-                </div>
-                <div class="d-flex justify-content-end font-italic">
-                  <p class="mb-0 mt-1 notification-date">${this.formatDate(notification.datetime)}</p>
-                </div>
-            </li>`
+                    ${notifications.length ? 
+                          notifications.reverse().map((notification) => {
+                          return (
+                            `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread'} pointer">
+                                <div class="text">
+                                    <strong>${notification.user}:</strong> 
+                                    ${notification.text}
+                                </div>
+                                <div class="d-flex justify-content-end font-italic">
+                                  <p class="mb-0 mt-1 notification-date">${this.formatDate(notification.datetime)}</p>
+                                </div>
+                            </li>`
 
-          )
-        }).join("")
-        }
+                          )
+                        }).join("")
+                      :
+                      ""
+                    }
               </ul>
               <p class="text-center m-1 p-0 border-top"><a class="small mark-all mt-2">View All</a></p>
           </div>
