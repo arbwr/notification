@@ -3,15 +3,17 @@ class ChatClient {
   socket = {}
   notifications = []
   config = {}
-  notificationHub = "https://notification-hub-erbzqkglja-ew.a.run.app/"
+  notificationHub = "https://notif-hub-erbzqkglja-ew.a.run.app/"
+  // notificationHub = "http://localhost:8080/"
+
 
   constructor(config) {
 
     /* Default data => Might use for validation */
     this.default = {
-      apiKey: "",
-      username: "",
-      organizationId: "",
+      token: "",
+      user: "",
+      room: "",
     }
 
     /* Configure */
@@ -19,16 +21,25 @@ class ChatClient {
       this.config = config;
     }
 
-    const socket = io(this.notificationHub);
-    this.socket = socket;
+    try {
+      const socket = io(this.notificationHub, {
+        query: {
+          token: this.config.token
+        }
+      });
+      this.socket = socket;
 
-    socket.on('connect', () => {
-      console.log('Socket.io connection established.')
-    })
+      socket.on('connect', () => {
+        console.log('Socket.io connection established.')
+      })
 
-    socket.on('disconnect', () => {
-      console.log('Socket.io connection closed.')
-    })
+      socket.on('disconnect', () => {
+        console.log('Socket.io connection closed.')
+      })
+    }
+    catch (error) {
+      console.log('Socket.io connection error', error)
+    }
 
   }
 
@@ -73,10 +84,10 @@ class ChatClient {
                 </div>
                 
                 <ul class="custom-notifications">
-                    ${notifications.length ? 
-                          notifications.reverse().map((notification) => {
-                          return (
-                            `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread'} pointer">
+                    ${notifications.length ?
+          notifications.reverse().map((notification) => {
+            return (
+              `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread'} pointer">
                                 <div class="text">
                                     <strong>${notification.user}:</strong> 
                                     ${notification.text}
@@ -86,11 +97,11 @@ class ChatClient {
                                 </div>
                             </li>`
 
-                          )
-                        }).join("")
-                      :
-                      ""
-                    }
+            )
+          }).join("")
+          :
+          ""
+        }
               </ul>
               <p class="text-center m-1 p-0 border-top"><a class="small mark-all mt-2">View All</a></p>
           </div>
