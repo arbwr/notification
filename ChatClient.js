@@ -3,7 +3,7 @@ class ChatClient {
   socket = {}
   notifications = []
   config = {}
-  notificationHub = "https://nh-app-erbzqkglja-ew.a.run.app/"
+  notificationHub = "https://chat-app-erbzqkglja-ew.a.run.app/"
   // notificationHub = "http://localhost:8080/"
 
 
