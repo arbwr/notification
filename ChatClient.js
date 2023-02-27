@@ -23,6 +23,7 @@ class ChatClient {
 
         try {
             const socket = io(this.notificationHub, {
+                transports : ['websocket'] ,
                 query: {
                     token: this.config.token
                 }
