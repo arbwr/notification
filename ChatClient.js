@@ -1,406 +1,396 @@
 class ChatClient {
 
-  socket = {}
-  notifications = []
-  config = {}
-  notificationHub = "https://chat-app-erbzqkglja-ew.a.run.app/"
-  // notificationHub = "http://localhost:8080/"
+    socket = {}
+    notifications = []
+    config = {}
+    notificationHub = "https://chat-app-erbzqkglja-ew.a.run.app/"
+    // notificationHub = "http://localhost:8080/"
+    badge = 0
 
+    constructor(config) {
 
-  constructor(config) {
-
-    /* Default data => Might use for validation */
-    this.default = {
-      token: "",
-      user: "",
-      room: "",
-    }
-
-    /* Configure */
-    if (typeof config === "object") {
-      this.config = config;
-    }
-
-    try {
-      
-      const socket = io(this.notificationHub, {
-         transports : ['websocket'] ,
-          query: {
-            token: this.config.token
-          }
-       }); 
-      
-      this.socket = socket;
-
-      socket.on('connect', () => {
-        console.log('Socket.io connection established.')
-      })
-
-      socket.on('disconnect', () => {
-        console.log('Socket.io connection closed.')
-      })
-    }
-    catch (error) {
-      console.log('Socket.io connection error', error)
-    }
-
-  }
-
-
-  addNotificationBox(containerId) {
-
-    const container = document.getElementById(containerId);
-
-    const signIn = () => {
-      return new Promise((resolve, reject) => {
-        this.socket.emit('signin', { user: this.config.user, room: this.config.room }, (error, history) => {
-          if (error) {
-            console.error(error);
-            reject(error)
-          } else {
-            console.log(history);
-            if (history?.messages) {
-              this.notifications = history?.messages
-            }
-
-            resolve(this.notifications)
-          }
-        });
-      })
-    }
-
-
-    signIn().then(notifications => {
-      container.innerHTML =
-        `
-        <div class="dropdown custom-dropdown">
-            <a href="#" data-toggle="dropdown" class="dropdown-link" aria-haspopup="true" aria-expanded="true">
-                <span class="material-icons wrap-icon icon-notifications">notifications</span>
-                <span class="number">${notifications.length <= 9 ? notifications.length : "9+"}</span>
-            </a>
-
-            <div class="dropdown-menu dropdown-menu-right active" aria-labelledby="dropdownMenuButton" x-placement="bottom-end" style="position: absolute; transform: translate3d(-142px, 35px, 0px); top: 0px; left: 0px; will-change: transform;">
-        
-                <div class="title-wrap d-flex align-items-center">
-                    <h5 class="title mb-0">Notifications</h5>
-                    <a class="small ml-auto mark-all" id="readAll">Mark all as read</a>
-                </div>
-                
-                <ul class="custom-notifications">
-                    ${notifications.length ?
-          notifications.reverse().map((notification) => {
-            return (
-              `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread'} pointer">
-                                <div class="text">
-                                    <strong>${notification.user}:</strong> 
-                                    ${notification.text}
-                                </div>
-                                <div class="d-flex justify-content-end font-italic">
-                                  <p class="mb-0 mt-1 notification-date">${this.formatDate(notification.datetime)}</p>
-                                </div>
-                            </li>`
-
-            )
-          }).join("")
-          :
-          ""
+        /* Default data => Might use for validation */
+        this.default = {
+            token: "",
+            user: "",
+            room: "",
         }
-              </ul>
-              <p class="text-center m-1 p-0 border-top"><a class="small mark-all mt-2">View All</a></p>
-          </div>
-      </div>
-  
-          <style>
-  
-            .content {
-              padding: 7rem 0;
-            }
-  
-            .notification-date {
-              color: #989797;
-            }
-            
-            .custom-dropdown .btn:active, .custom-dropdown .btn:focus {
-              -webkit-box-shadow: none !important;
-              box-shadow: none !important;
-              outline: none !important;
-            }
-            
-            .custom-dropdown .btn.btn-custom {
-              border: 1px solid #efefef !important;
-            }
-  
-            .mark-all {
-              color: #0050a1 !important;
-              text-decoration: none !important;
-              cursor: pointer !important;
-              font-size: 15px !important;
-            }
 
-            .pointer {
-              cursor: pointer !important;
-            }
-  
-            .mark-all:hover {
-              color: #0050a18a !important;
-              text-decoration: none !important;
-            }
-            
-            .custom-dropdown .title-wrap {
-              padding-top: 5px !important;
-              padding-bottom: 15px !important;
-              padding-right: 5px !important;
-              padding-left: 5px !important;
-            }
-            
-            .custom-dropdown .title {
-              
-              font-weight: 700 !important;
-            }
-            
-            .custom-dropdown .dropdown-link {
-              color: #888 !important;
-              display: inline-block !important;
-              padding-right: 0px !important;
-              position: relative !important;
-            }
-            
-            .custom-dropdown .dropdown-link .number {
-              width: 24px !important;
-              height: 24px !important;
-              line-height: 20px !important;
-              border-radius: 50% !important;
-              background: red !important;
-              position: absolute !important;
-             
-              top: -10px !important;
-              right: -10px !important;
-              border: 2px solid #fff !important;
-              color: #fff !important;
-              text-align: center !important;
-            }
-            
-            .custom-dropdown .dropdown-menu {
-              border: 1px solid transparent !important;
-              -webkit-box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.2) !important;
-              box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.2) !important;
-              margin-top: 0px !important !important;
-              padding-top: 0 !important;
-              padding-bottom: 0 !important;
-              padding: 10px !important;
-              opacity: 0 !important;
-              left: 0 !important !important;
-              -webkit-transition: .3s margin-top ease, .3s opacity ease, .3s visibility ease !important;
-              -o-transition: .3s margin-top ease, .3s opacity ease, .3s visibility ease !important;
-              transition: .3s margin-top ease, .3s opacity ease, .3s visibility ease !important;
-              visibility: hidden !important;
-              max-width: 300px !important;
-              min-width: 300px !important;
+        /* Configure */
+        if (typeof config === "object") {
+            this.config = config;
+        }
 
-            }
-            
-            .custom-dropdown .dropdown-menu.active {
-              opacity: 1 !important;
-              visibility: visible !important;
-              margin-top: 10px !important;
-            }
-            
-            .custom-dropdown .custom-notifications {
-              list-style: none !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              height: 270px !important;
-              overflow-y: auto; !important
-              border-bottom: 1px solid #efefef !important;
-            }
-  
-            .custom-dropdown, .custom-notifications {
-              -ms-overflow-style: none !important;
-              -webkit-overflow-scrolling: touch !important;
-            }
-  
-            .custom-dropdown::-webkit-scrollbar, .custom-notifications::-webkit-scrollbar {
-              display: none !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li {
-              display: block !important;
-  
-              margin-bottom: 10px !important;
-              border-radius: 10px !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li:last-child {
-              margin-bottom: 5px !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li {
-              display: block !important;
-              padding: 20px !important;
-              color: #000000c2 !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li:hover {
-              background: #aad4ffd1 !important;
-              transition: 0.3s !important;
-            }
-            
-  
-            .custom-dropdown .custom-notifications > li > .text {
-              margin-top: 0px !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li > .text strong {
-              font-weight: 700 !important;
-              color: #000 !important;
-            }
-            
-            .custom-dropdown .custom-notifications > li.unread {
-              background: #0050a18a !important;
-              color: #ffffff !important;
-            }
-  
-            li.unread > div > .notification-date {
-              color: #e3e3e3 !important;
-            }
-  
-    
-          </style>
-          `
+        try {
+            const socket = io(this.notificationHub, {
+                query: {
+                    token: this.config.token
+                }
+            });
+            this.socket = socket;
 
-      notifications.map(notification => {
-        const message = document.getElementById(`notification-${notification.uuid}`);
-        message.onclick = () => {
-          this.readMessage(notification);
-        };
-      });
+            socket.on('connect', () => {
+                console.log('Socket.io connection established.')
+            })
 
-      const readAllButton = document.getElementById("readAll")
-      readAllButton.onclick = () => {
-        this.readAllMessages()
-      }
-
-    })
-
-
-
-
-    /* Message listener */
-    this.socket.on('message', (notification) => {
-      console.log(notification);
-      /* Get notification conntianer */
-      const notificationContainer = document.querySelector('.custom-notifications')
-      let newNotification = document.createElement("li");
-      newNotification.innerHTML = `          <div class="text">
-            <strong>${notification.user}:</strong> 
-            ${notification.text}
-        </div>
-        <div class="d-flex justify-content-end font-italic">
-          <p class="mb-0 mt-1 notification-date">${this.formatDate(notification.datetime)}</p>
-        </div>`
-      if (!notification.read.includes(this.config.user)) {
-        newNotification.classList.add("unread")
-      }
-
-      notificationContainer.insertBefore(
-        newNotification,
-        notificationContainer.firstChild
-      )
-    });
-
-
-    $(function () {
-      $('.custom-dropdown').on('show.bs.dropdown', function () {
-
-        var that = $(this);
-        setTimeout(function () {
-          that.find('.dropdown-menu').addClass('active');
-        }, 100);
-      });
-      $('.custom-dropdown').on('hide.bs.dropdown', function () {
-        $(this).find('.dropdown-menu').removeClass('active');
-      });
-
-    });
-  }
-
-  formatDate(date) {
-
-    const now = new Date();
-    const diff = now - new Date(date);
-    const minute = 60 * 1000;
-    const hour = 60 * minute;
-    const day = 24 * hour;
-    const month = 30 * day;
-
-    if (diff < minute) {
-      return "Just now"
-    } else if (diff < hour) {
-      return Math.floor(diff / minute) + " min ago";
-    } else if (diff < day) {
-      return Math.floor(diff / hour) + " hours ago";
-    } else if (diff < month) {
-      return Math.floor(diff / day) + " days ago";
-    } else {
-      return Math.floor(diff / month) + " months ago";
-    }
-  }
-
-
-  async readMessage(message) {
-
-    if (message.read.includes(this.config.user)) return;
-
-    try {
-
-      const response = await fetch(`${this.notificationHub}readMessage`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          roomName: this.config.room,
-          user: this.config.user,
-          message: message
-        }),
-      })
-
-      const success = await response.json()
-
-      if (success.success) {
-        const notification = document.getElementById(`notification-${message.uuid}`);
-        notification.classList.remove("unread")
-      }
+            socket.on('disconnect', () => {
+                console.log('Socket.io connection closed.')
+            })
+        }
+        catch (error) {
+            console.log('Socket.io connection error', error)
+        }
 
     }
-    catch (err) {
-      console.error(err)
+
+
+    addNotificationBox(containerId) {
+
+        const container = document.getElementById(containerId);
+
+        const signIn = () => {
+            return new Promise((resolve, reject) => {
+                this.socket.emit('signin', { user: this.config.user, room: this.config.room }, (error, history) => {
+                    if (error) {
+                        console.error(error);
+                        reject(error)
+                    } else {
+                        console.log(history);
+                        if (history?.messages) {
+                            this.notifications = history?.messages
+                        }
+
+                        resolve(this.notifications)
+                    }
+                });
+            })
+        }
+
+
+        signIn().then(notifications => {
+
+            /* Get user's unread messages number */
+            const unreadNotifications = notifications.filter(notification => {
+                return !notification.read.includes(this.config.user);
+            });
+
+            this.badge = unreadNotifications?.length
+
+            container.innerHTML =
+                `
+                <div class="notification-box">
+
+                <button class="toggler-notification" id="toggler-notification">
+                    <span class="material-icons">notifications</span>
+                    <span class="notification-badge ${this.badge > 0 ? "" : "hide"}">${this.badge > 0 ? this.badge : ""}</span>
+                </button>
+            
+            
+                <ul class="notification-dropdown" id="notification-dropdown">
+                    ${notifications?.length ?
+                        notifications.reverse().map((notification) => {
+                            return (
+                                `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread-notification'}">
+                                        <div class="notification-text">
+                                            <strong>${notification.user}: </strong>
+                                            <p>${notification.text}</p>
+                                        </div>
+
+                                        <div class="notification-time">
+                                            <p>${this.formatDate(notification.datetime)}</p>
+                                        </div>
+                                    </li>`
+                            )
+                        }).join("")
+                        :
+                        `
+                            <p class="no-notifications">No notifications</p>
+                        `
+                }
+                </ul>
+            
+            
+              </div>
+            
+              <style>
+
+                .notification-box>* {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+                  font-family: "Inter", sans-serif;
+                  --shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px,
+                    rgba(0, 0, 0, 0.1) 0px 0px 0px 1px;
+                  --color: #166e67;
+                  --gap: 0.5rem;
+                  --radius: 7px;
+                }
+            
+                .notification-box {
+                  font-size: 0.9rem !important;
+                  color: black !important;
+                }
+            
+                .toggler-notification {
+                  all: unset !important;
+                  display: flex !important;
+                  align-items: center !important;
+                  justify-content: flex-start !important;
+                  column-gap: var(--gap) !important;
+                  cursor: pointer !important;
+                  border-radius: var(--radius) !important;
+                  border: none !important;
+                  padding: 7px !important;
+                  position: relative !important;
+                }
+
+                
+                .notification-badge {
+                    position: absolute;
+                    top: 0px;
+                    right: 1px;
+                    background-color: red;
+                    color: white;
+                    border-radius: 50%;
+                    padding: 5px;
+                    font-size: 12px;
+                    text-align: center;
+                    line-height: 0.9;
+                    min-width: 10px;
+                    height: 10px;
+                }
+            
+                .notification-dropdown {
+                  position: absolute !important;
+                  box-shadow: var(--shadow) !important;
+                  border-radius: var(--radius) !important;
+                  margin-top: 0.3rem !important;
+                  background: white;
+                  max-width: 300px !important;
+                  min-width: 300px !important;
+                  display: none;
+                  opacity: 0;
+                  transition: all 0.4s cubic-bezier(0.16, 1, 0.5, 1) !important;
+                  padding: 0.8rem !important;
+                  height: 270px !important;
+                  overflow-y: auto !important;
+                  z-index: 10 !important;
+                }
+            
+                .notification-dropdown li {
+                  display: flex !important;
+                  flex-direction: column !important;
+                  column-gap: var(--gap) !important;
+                  padding: 0.9rem 1rem !important;
+                  text-decoration: none !important;
+                  color: black;
+                  border: 1px solid #1f4164d1 !important;
+                  margin-bottom: 12px !important;
+                  border-radius: 10px !important;
+                  cursor: pointer !important;
+                }
+            
+                .notification-dropdown li:hover {
+                  background: #1f4164d1 !important;
+                  color: white !important;
+                  transition: 0.3s !important;
+                }
+
+                .unread-notification {
+                    background: #1f4164d1 !important;
+                    color: white !important;
+                }
+
+                .no-notifications {
+                    position: absolute !important;
+                    bottom: 41% !important;
+                    right: 31% !important;
+                    font-size: 17px !important;
+                    color: #1f4164d1 !important;
+                }
+            
+                .notification-text {
+                  display: flex;
+                }
+            
+                .notification-text>p {
+                  margin: 0 !important;
+                }
+            
+                .notification-text>strong {
+                  margin-right: 5px !important;
+                }
+            
+                .notification-time>p {
+                  margin: 10px 0 0 0 !important;
+                  font-style: italic !important;
+                  text-align: end !important;
+                }
+            
+                .notification-dropdown {
+                  -ms-overflow-style: none !important;
+                  -webkit-overflow-scrolling: touch !important;
+                }
+            
+                .notification-dropdown::-webkit-scrollbar {
+                  display: none !important;
+                }
+            
+                .show {
+                  display: block;
+                  opacity: 1;
+                  transform: translateY(0rem);
+                }
+
+                .hide {
+                    display: none;
+                }
+
+                .show-badge {
+                    display: in-line;
+                }
+
+              </style>
+                `
+
+            const dropdownBtn = document.getElementById("toggler-notification");
+            const dropdownMenu = document.getElementById("notification-dropdown");
+
+            // Toggle dropdown function
+            const toggleDropdown = function () {
+                const offsetLeft = dropdownBtn.getBoundingClientRect().left;
+                const screenWidth = window.innerWidth;
+
+                if (offsetLeft < screenWidth / 2) {
+                    dropdownMenu.style.transform = "translateY(0.5rem)"
+                } else {
+                    dropdownMenu.style.transform = "translate(-16rem, 0.5rem)"
+                }
+
+                if(dropdownMenu.classList.contains("show")) {
+                    readAllMessages()
+                }
+
+                dropdownMenu.classList.toggle("show");
+
+            };
+
+            // Toggle dropdown open/close when dropdown button is clicked
+            dropdownBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+
+            // Close dropdown when dom element is clicked
+            document.documentElement.addEventListener("click", function () {
+                if (dropdownMenu.classList.contains("show")) {
+                    toggleDropdown();
+                }
+            });
+
+
+            const readAllMessages = async () => {
+                try {
+                    const response = await fetch(`${this.notificationHub}api/markAllAsRead`, {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            room: this.config.room,
+                            user: this.config.user,
+                        }),
+                    })
+        
+                    const success = await response.json()
+                    if(success) {
+
+                        /* Hide badge number and make it 0 */
+                        const badgeElement = document.querySelector('.notification-badge')
+                        this.badge = 0;
+                        badgeElement.innerHTML = this.badge;
+                        badgeElement.classList.add('hide')
+
+                        /* Select unread messages and remove class */
+                        const unreadMessagesContainers = document.querySelectorAll('.unread-notification')
+                        unreadMessagesContainers.forEach(unreadMessagesContainers => {
+                            unreadMessagesContainers.classList.remove('unread-notification')
+                        })
+
+                    }
+                }
+                catch (err) {
+                    console.error(err)
+                }
+            }
+        
+        })
+
+
+
+        /* Message listener */
+        this.socket.on('message', (notification) => {
+            console.log(notification)
+            /* Get notification conntianer */
+            const notificationContainer = document.querySelector('.notification-dropdown')
+            let newNotification = document.createElement("li");
+
+            /* Set id and class */
+            newNotification.id = "notification-" + notification.uuid
+            newNotification.classList.add("unread-notification")
+
+            newNotification.innerHTML =
+            `
+                <div class="notification-text">
+                    <strong>${notification.user}: </strong>
+                    <p>${notification.text}</p>
+                </div>
+
+                <div class="notification-time">
+                    <p>${this.formatDate(notification.datetime)}</p>
+                </div>
+            `
+
+            const badgeElement = document.querySelector('.notification-badge')
+            const noNotifications = document.querySelector('.no-notifications')
+            
+            badgeElement.classList.remove('hide')
+
+            if(noNotifications) {
+                noNotifications?.classList.add('hide')
+            }
+
+            this.badge = Number(this.badge) + 1;
+            badgeElement.innerHTML = this.badge;
+
+            notificationContainer.insertBefore(
+                newNotification,
+                notificationContainer.firstChild
+            )
+        });
+
     }
-  }
-
-  async readAllMessages() {
-
-    try {
-
-      const response = await fetch(`${this.notificationHub}markAllAsRead`, {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          room: this.config.room,
-          user: this.config.user,
-        }),
-      })
-
-      const success = await response.json()
 
 
+    formatDate(date) {
+        const now = new Date();
+        const diff = now - new Date(date);
+        const minute = 60 * 1000;
+        const hour = 60 * minute;
+        const day = 24 * hour;
+        const month = 30 * day;
+
+        if (diff < minute) {
+            return "Just now"
+        } else if (diff < hour) {
+            return Math.floor(diff / minute) + " min ago";
+        } else if (diff < day) {
+            return Math.floor(diff / hour) + " hours ago";
+        } else if (diff < month) {
+            return Math.floor(diff / day) + " days ago";
+        } else {
+            return Math.floor(diff / month) + " months ago";
+        }
     }
-    catch (err) {
-      console.error(err)
-    }
-  }
-
 
 }
