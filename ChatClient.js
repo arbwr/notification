@@ -88,7 +88,7 @@ class ChatClient {
             
                 <div class="notification-dropdown" id="notification-dropdown">                
                     <h5 class="notification-header">Notifications</h5>
-                    <ul>
+                    <ul class="notification-ul">
                         ${notifications?.length ?
                         notifications.reverse().map((notification) => {
                             return (
@@ -213,12 +213,16 @@ class ChatClient {
 
                 .notification-dropdown li:hover a {
                     color: #71eded !important;
-                  }
+                }
   
 
                 .unread-notification {
                     background: #004fa1d1 !important;
                     color: white !important;
+                }
+
+                .unread-notification a {
+                    color: #71eded !important;
                 }
 
                 .no-notifications {
@@ -366,7 +370,7 @@ class ChatClient {
         this.socket.on('message', (notification) => {
             console.log(notification)
             /* Get notification conntianer */
-            const notificationContainer = document.querySelector('.notification-dropdown')
+            const notificationContainer = document.querySelector('.notification-ul')
             let newNotification = document.createElement("li");
 
             /* Set id and class */
@@ -376,14 +380,13 @@ class ChatClient {
             newNotification.innerHTML =
                 `
                 <div class="notification-text">
-                    <strong>${notification.user}: </strong>
-                    <p>${notification.text}</p>
+                    <span>${notification.text}</span>
                 </div>
 
                 <div class="notification-time">
                     <p>${this.formatDate(notification.datetime)}</p>
                 </div>
-            `
+                `
 
             const badgeElement = document.querySelector('.notification-badge')
             const noNotifications = document.querySelector('.no-notifications')
