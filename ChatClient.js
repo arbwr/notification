@@ -23,7 +23,7 @@ class ChatClient {
 
         try {
             const socket = io(this.notificationHub, {
-                transports : ['websocket'] ,
+                transports: ['websocket'],
                 query: {
                     token: this.config.token
                 }
@@ -86,29 +86,30 @@ class ChatClient {
                     <span class="notification-badge ${this.badge > 0 ? "" : "hide"}">${this.badge > 0 ? this.badge : ""}</span>
                 </button>
             
-            
-                <ul class="notification-dropdown" id="notification-dropdown">
-                    ${notifications?.length ?
+                <div class="notification-dropdown" id="notification-dropdown">                
+                    <h5 class="notification-header">Notifications</h5>
+                    <ul>
+                        ${notifications?.length ?
                         notifications.reverse().map((notification) => {
                             return (
                                 `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread-notification'}">
-                                        <div class="notification-text">
-                                            <strong>${notification.user}: </strong>
-                                            <p>${notification.text}</p>
-                                        </div>
+                                    <div class="notification-text">
+                                        <span>${notification.text}</span>
+                                    </div>
 
-                                        <div class="notification-time">
-                                            <p>${this.formatDate(notification.datetime)}</p>
-                                        </div>
-                                    </li>`
+                                    <div class="notification-time">
+                                        <p>${this.formatDate(notification.datetime)}</p>
+                                    </div>
+                                </li>`
                             )
                         }).join("")
                         :
                         `
-                            <p class="no-notifications">No notifications</p>
-                        `
-                }
-                </ul>
+                                <p class="no-notifications">No notifications</p>
+                            `
+                    }
+                    </ul>
+                </div>
             
             
               </div>
@@ -125,6 +126,12 @@ class ChatClient {
                   --color: #166e67;
                   --gap: 0.5rem;
                   --radius: 7px;
+                }
+
+                .notification-header {
+                    margin: 5px 0 5px 0 !important; 
+                    font-size: 17px !important;
+                    padding: 0 0 5px 5px !important;
                 }
             
                 .notification-box {
@@ -163,42 +170,54 @@ class ChatClient {
             
                 .notification-dropdown {
                   position: absolute !important;
-                  box-shadow: var(--shadow) !important;
-                  border-radius: var(--radius) !important;
                   margin-top: 0.3rem !important;
                   background: white;
-                  max-width: 300px !important;
-                  min-width: 300px !important;
+                  max-width: 320px !important;
+                  min-width: 320px !important;
                   display: none;
                   opacity: 0;
                   transition: all 0.4s cubic-bezier(0.16, 1, 0.5, 1) !important;
-                  padding: 0.8rem !important;
-                  height: 270px !important;
+                  padding: 0.8rem 1rem !important;
+                  height: 280px !important;
                   overflow-y: auto !important;
                   z-index: 10 !important;
+                  box-shadow: 0px 3px 10px rgb(0 0 0 / 20%) !important;
+                  border-radius: 10px !important;
+                }
+
+                .notification-dropdown > ul {
+                    margin: 0 !important;
+                    padding: 0 5px !important;
                 }
             
                 .notification-dropdown li {
                   display: flex !important;
                   flex-direction: column !important;
-                  column-gap: var(--gap) !important;
                   padding: 0.9rem 1rem !important;
                   text-decoration: none !important;
                   color: black;
-                  border: 1px solid #1f4164d1 !important;
+                  border: 1.5px solid #1b83efd1 !important;
                   margin-bottom: 12px !important;
                   border-radius: 10px !important;
-                  cursor: pointer !important;
                 }
+
+                .notification-dropdown a {
+                    color: #1b83ef !important;
+                  }
             
                 .notification-dropdown li:hover {
-                  background: #1f4164d1 !important;
+                  background: #004fa1d1 !important;
                   color: white !important;
                   transition: 0.3s !important;
                 }
 
+                .notification-dropdown li:hover a {
+                    color: #71eded !important;
+                  }
+  
+
                 .unread-notification {
-                    background: #1f4164d1 !important;
+                    background: #004fa1d1 !important;
                     color: white !important;
                 }
 
@@ -208,6 +227,15 @@ class ChatClient {
                     right: 31% !important;
                     font-size: 17px !important;
                     color: #1f4164d1 !important;
+                }
+
+                li>.notification-text>span {
+                    width: 100% !important; 
+                }
+
+                .notification-text p {
+                    width: 100% !important; 
+                    word-wrap: break-word !important;
                 }
             
                 .notification-text {
@@ -268,7 +296,7 @@ class ChatClient {
                     dropdownMenu.style.transform = "translate(-16rem, 0.5rem)"
                 }
 
-                if(dropdownMenu.classList.contains("show")) {
+                if (dropdownMenu.classList.contains("show")) {
                     readAllMessages()
                 }
 
@@ -284,6 +312,11 @@ class ChatClient {
 
             // Close dropdown when dom element is clicked
             document.documentElement.addEventListener("click", function () {
+
+                if (dropdownMenu.contains(event.target)) {
+                    return;
+                }
+
                 if (dropdownMenu.classList.contains("show")) {
                     toggleDropdown();
                 }
@@ -302,9 +335,9 @@ class ChatClient {
                             user: this.config.user,
                         }),
                     })
-        
+
                     const success = await response.json()
-                    if(success) {
+                    if (success) {
 
                         /* Hide badge number and make it 0 */
                         const badgeElement = document.querySelector('.notification-badge')
@@ -324,7 +357,7 @@ class ChatClient {
                     console.error(err)
                 }
             }
-        
+
         })
 
 
@@ -341,7 +374,7 @@ class ChatClient {
             newNotification.classList.add("unread-notification")
 
             newNotification.innerHTML =
-            `
+                `
                 <div class="notification-text">
                     <strong>${notification.user}: </strong>
                     <p>${notification.text}</p>
@@ -354,10 +387,10 @@ class ChatClient {
 
             const badgeElement = document.querySelector('.notification-badge')
             const noNotifications = document.querySelector('.no-notifications')
-            
+
             badgeElement.classList.remove('hide')
 
-            if(noNotifications) {
+            if (noNotifications) {
                 noNotifications?.classList.add('hide')
             }
 
