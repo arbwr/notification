@@ -24,6 +24,7 @@ class ChatClient {
         try {
             const socket = io(this.notificationHub, {
                 transports: ['websocket'],
+                reconnection: false,
                 query: {
                     token: this.config.token
                 }
