@@ -141,7 +141,7 @@ class ChatClient {
                 .notification-header {
                 margin: 0 !important;
                 font-size: 18px !important;
-                padding: 0.8rem 0 0.8rem 1rem !important;
+                padding: 1rem 0 0.8rem 1rem !important;
                 border-bottom: 1px solid #c5c5c5;
                 position: sticky !important;
                 top: 0 !important;
@@ -245,11 +245,11 @@ class ChatClient {
                 }
 
                 .no-notifications {
-                    position: absolute !important;
-                    bottom: 39% !important;
-                    right: 37% !important;
-                    font-size: 17px !important;
-                    color: #1f4164d1 !important;
+                  font-size: 17px !important;
+                  color: #1f4164d1 !important;
+                  width: 100%;
+                  text-align: center;
+                  margin-top: 31px;
                 }
 
                 .notification-text>span {
