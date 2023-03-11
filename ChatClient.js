@@ -22,13 +22,15 @@ class ChatClient {
         }
 
         try {
+
             const socket = io(this.notificationHub, {
                 transports: ['websocket'],
-                reconnection: false,
                 query: {
                     token: this.config.token
-                }
+                },
+                reconnection: false
             });
+
             this.socket = socket;
 
             socket.on('connect', () => {
@@ -78,214 +80,233 @@ class ChatClient {
 
             this.badge = unreadNotifications?.length
 
+  
             container.innerHTML =
-                `
-                <div class="notification-box">
+            `
+            <div class="notification-box">
 
                 <button class="toggler-notification" id="toggler-notification">
                     <span class="material-icons">notifications</span>
-                    <span class="notification-badge ${this.badge > 0 ? "" : "hide"}">${this.badge > 0 ? this.badge : ""}</span>
+                    <span class='notification-badge ${this.badge > 0 ? "" : "hide"}'>${this.badge > 0 ? this.badge : ""}</span>
                 </button>
-            
-                <div class="notification-dropdown" id="notification-dropdown">                
-                    <h5 class="notification-header">Notifications</h5>
-                    <ul class="notification-ul">
-                        ${notifications?.length ?
-                        notifications.reverse().map((notification) => {
-                            return (
-                                `<li id="notification-${notification.uuid}" class="${notification.read.includes(this.config.user) ? '' : 'unread-notification'}">
-                                    <div class="notification-text">
-                                        <span>${notification.text}</span>
-                                    </div>
 
-                                    <div class="notification-time">
-                                        <p>${this.formatDate(notification.datetime)}</p>
-                                    </div>
-                                </li>`
-                            )
-                        }).join("")
+            <div class="notification-dropdown" id="notification-dropdown">
+
+                <h3 class="notification-header">Notifications</h3>
+
+                <ul class="notification-ul">
+               
+                    ${notifications?.length ? 
+                        (
+                            notifications.reverse().map((notification) => {
+                                return (
+                                    `
+                                        <li id="notification-${notification.uuid}">
+                                            <div class="dot-container">
+                                                <div class="notification-dot ${notification.read.includes(this.config.user) ? '' : 'unread-notification'}"></div>
+                                            </div>
+                
+                                            <div class="notification-info">
+                                                <div class="notification-text">
+                                                    <span>${notification.text}</span>
+                                                </div>
+                                                <div class="notification-time">
+                                                    <p>${this.formatDate(notification.datetime)}</p>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    `
+                                )
+                            }).join("")
+                        )
                         :
-                        `
-                                <p class="no-notifications">No notifications</p>
-                            `
+                        `<p class="no-notifications">No notifications</p>`
                     }
-                    </ul>
+                </ul>
                 </div>
-            
-            
-              </div>
-            
-              <style>
+            </div>
 
+            <style>
                 .notification-box>* {
-                  margin: 0;
-                  padding: 0;
-                  box-sizing: border-box;
-                  font-family: "Inter", sans-serif;
-                  --shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px,
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
+                --shadow: rgba(0, 0, 0, 0.05) 0px 6px 10px 0px,
                     rgba(0, 0, 0, 0.1) 0px 0px 0px 1px;
-                  --color: #166e67;
-                  --gap: 0.5rem;
-                  --radius: 7px;
+                --gap: 0.5rem;
+                --radius: 7px;
                 }
 
                 .notification-header {
-                    margin: 5px 0 5px 0 !important; 
-                    font-size: 17px !important;
-                    padding: 0 0 5px 5px !important;
+                margin: 0 !important;
+                font-size: 18px !important;
+                padding: 0.8rem 0 0.8rem 1rem !important;
+                border-bottom: 1px solid #c5c5c5;
+                position: sticky !important;
+                top: 0 !important;
+                background-color: #fff !important;
                 }
-            
+
                 .notification-box {
-                  font-size: 0.9rem !important;
-                  color: black !important;
+                font-size: 0.9rem !important;
+                color: black !important;
                 }
-            
+
                 .toggler-notification {
-                  all: unset !important;
-                  display: flex !important;
-                  align-items: center !important;
-                  justify-content: flex-start !important;
-                  column-gap: var(--gap) !important;
-                  cursor: pointer !important;
-                  border-radius: var(--radius) !important;
-                  border: none !important;
-                  padding: 7px !important;
-                  position: relative !important;
+                all: unset !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+                column-gap: var(--gap) !important;
+                cursor: pointer !important;
+                border-radius: var(--radius) !important;
+                border: none !important;
+                padding: 7px !important;
+                position: relative !important;
                 }
 
-                
+
                 .notification-badge {
-                    position: absolute;
-                    top: 0px;
-                    right: 1px;
-                    background-color: red;
-                    color: white;
-                    border-radius: 50%;
-                    padding: 5px;
-                    font-size: 12px;
-                    text-align: center;
-                    line-height: 0.9;
-                    min-width: 10px;
-                    height: 10px;
-                }
-            
-                .notification-dropdown {
-                  position: absolute !important;
-                  margin-top: 0.3rem !important;
-                  background: white;
-                  max-width: 320px !important;
-                  min-width: 320px !important;
-                  display: none;
-                  opacity: 0;
-                  transition: all 0.4s cubic-bezier(0.16, 1, 0.5, 1) !important;
-                  padding: 0.8rem 1rem !important;
-                  height: 280px !important;
-                  overflow-y: auto !important;
-                  z-index: 10 !important;
-                  box-shadow: 0px 3px 10px rgb(0 0 0 / 20%) !important;
-                  border-radius: 10px !important;
+                position: absolute;
+                top: 0px;
+                right: 1px;
+                background-color: red;
+                color: white;
+                border-radius: 50%;
+                padding: 5px;
+                font-size: 12px;
+                text-align: center;
+                line-height: 0.9;
+                min-width: 10px;
+                height: 10px;
                 }
 
-                .notification-dropdown > ul {
-                    margin: 0 !important;
-                    padding: 0 5px !important;
+                .notification-dropdown {
+                position: absolute !important;
+                margin-top: 0.3rem !important;
+                background: white;
+                max-width: 360px !important;
+                min-width: 360px !important;
+                display: none;
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.5, 1) !important;
+                /* padding: 0.8rem 1rem !important; */
+                height: 320px !important;
+                overflow-y: auto !important;
+                z-index: 10 !important;
+                box-shadow: 0px 3px 10px rgb(0 0 0 / 20%) !important;
+                border-radius: 10px !important;
                 }
-            
+
+                .notification-dropdown>ul {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                }
+
                 .notification-dropdown li {
-                  display: flex !important;
-                  flex-direction: column !important;
-                  padding: 0.9rem 1rem !important;
-                  text-decoration: none !important;
-                  color: black;
-                  border: 1.5px solid #1b83efd1 !important;
-                  margin-bottom: 12px !important;
-                  border-radius: 10px !important;
+                display: flex !important;
+                padding: 0.9rem 0.8rem !important;
+                align-items: center !important;
+                text-decoration: none !important;
+                color: black;
+                border-bottom: 1px solid rgb(221, 221, 221);
+                }
+
+                .notification-dropdown li>.dot-container {
+                    width: 7% !important;
+                }
+
+                .notification-dropdown li>.notification-info {
+                width: 93% !important;
+                max-width: 93% !important;
+                }
+
+                .notification-dot {
+                width: 10px !important;
+                height: 10px !important;
+                border-radius: 50% !important;
+                background-color: #1b83ef !important;
+                visibility: hidden;
+                }
+
+                .unread-notification {
+                visibility: visible;
                 }
 
                 .notification-dropdown a {
-                    color: #1b83ef !important;
-                  }
-            
+                color: #1b83ef !important;
+                }
+
                 .notification-dropdown li:hover {
-                  background: #004fa1d1 !important;
-                  color: white !important;
-                  transition: 0.3s !important;
-                }
-
-                .notification-dropdown li:hover a {
-                    color: #71eded !important;
-                }
-  
-
-                .unread-notification {
-                    background: #004fa1d1 !important;
-                    color: white !important;
-                }
-
-                .unread-notification a {
-                    color: #71eded !important;
+                background-color: #e9e9e9;
+                transition: 0.3s !important;
                 }
 
                 .no-notifications {
                     position: absolute !important;
-                    bottom: 41% !important;
-                    right: 31% !important;
+                    bottom: 39% !important;
+                    right: 37% !important;
                     font-size: 17px !important;
                     color: #1f4164d1 !important;
                 }
 
-                li>.notification-text>span {
-                    width: 100% !important; 
+                .notification-text>span {
+                width: 100% !important;
+                max-width: 100% !important;
+
                 }
 
-                .notification-text p {
-                    width: 100% !important; 
-                    word-wrap: break-word !important;
+                .notification-text>span>* {
+                word-wrap: break-word !important;
                 }
-            
+
                 .notification-text {
-                  display: flex;
+                display: flex;
+                width: 100% !important;
+                max-width: 100% !important;
                 }
-            
-                .notification-text>p {
-                  margin: 0 !important;
+
+                .notification-text>span>p {
+                margin: 0 !important;
                 }
-            
+
                 .notification-text>strong {
-                  margin-right: 5px !important;
+                margin-right: 5px !important;
                 }
-            
+
                 .notification-time>p {
-                  margin: 10px 0 0 0 !important;
-                  font-style: italic !important;
-                  text-align: end !important;
+                margin: 5px 0 0 0 !important;
+                color: #6d6d6d !important;
+                font-size: 13px;
                 }
-            
+
                 .notification-dropdown {
-                  -ms-overflow-style: none !important;
-                  -webkit-overflow-scrolling: touch !important;
+                -ms-overflow-style: none !important;
+                -webkit-overflow-scrolling: touch !important;
                 }
-            
+
                 .notification-dropdown::-webkit-scrollbar {
-                  display: none !important;
+                display: none !important;
                 }
-            
+
                 .show {
-                  display: block;
-                  opacity: 1;
-                  transform: translateY(0rem);
+                display: block;
+                opacity: 1;
+                transform: translateY(0rem);
                 }
 
                 .hide {
-                    display: none;
+                display: none;
                 }
 
                 .show-badge {
-                    display: in-line;
+                display: in-line;
                 }
+            </style>
+        `
 
-              </style>
-                `
 
             const dropdownBtn = document.getElementById("toggler-notification");
             const dropdownMenu = document.getElementById("notification-dropdown");
@@ -366,7 +387,6 @@ class ChatClient {
         })
 
 
-
         /* Message listener */
         this.socket.on('message', (notification) => {
             console.log(notification)
@@ -376,16 +396,24 @@ class ChatClient {
 
             /* Set id and class */
             newNotification.id = "notification-" + notification.uuid
-            newNotification.classList.add("unread-notification")
+
+
+      
+   
 
             newNotification.innerHTML =
                 `
-                <div class="notification-text">
-                    <span>${notification.text}</span>
+                <div class="dot-container">
+                    <div class="notification-dot unread-notification"></div>
                 </div>
 
-                <div class="notification-time">
-                    <p>${this.formatDate(notification.datetime)}</p>
+                <div class="notification-info">
+                    <div class="notification-text">
+                        <span>${notification.text}</span>
+                    </div>
+                    <div class="notification-time">
+                        <p>${this.formatDate(notification.datetime)}</p>
+                    </div>
                 </div>
                 `
 
