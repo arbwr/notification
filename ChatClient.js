@@ -192,7 +192,8 @@ class ChatClient {
                 opacity: 0;
                 transition: all 0.4s cubic-bezier(0.16, 1, 0.5, 1) !important;
                 /* padding: 0.8rem 1rem !important; */
-                height: 320px !important;
+                min-height: 300px !important;
+                max-height: 80vh !important;
                 overflow-y: auto !important;
                 z-index: 10 !important;
                 box-shadow: 0px 3px 10px rgb(0 0 0 / 20%) !important;
